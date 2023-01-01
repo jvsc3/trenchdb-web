@@ -1,0 +1,68 @@
+<html>
+<head>
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>trenchdb</h1>
+  <div id="table-container">
+  </div>
+  <script>
+    const mysql = require('mysql');
+
+    const connection = mysql.createConnection({
+      host: 'localhost',
+      user: 'root',
+      password: '',
+      database: 'trenches'
+    });
+    connection.connect();
+
+    connection.query('SHOW TABLES', function(error, results, fields) {
+      if (error) throw error;
+
+      for (let i = 0; i < results.length; i++) {
+        const tableName = results[i]['Tables_in_trenches'];
+        const tableElement = document.createElement('table');
+        tableElement.innerHTML = `
+          <tr>
+            <th>${tableName}</th>
+            <th><button id="${tableName}-view">View</button></th>
+            <th><button id="${tableName}-delete">Delete</button></th>
+          </tr>
+        `;
+        document.getElementById('table-container').appendChild(tableElement);
+
+        document.getElementById(`${tableName}-view`).addEventListener('click', function() {
+          viewTable(tableName);
+        });
+        document.getElementById(`${tableName}-delete`).addEventListener('click', function() {
+          deleteTable(tableName);
+        });
+      }
+    });
+
+    function viewTable(tableName) {
+      connection.query(`SELECT * FROM ${tableName}`, function(error, results, fields) {
+        if (error) throw error;
+        console.log(results);
+      });
+    }
+
+    function deleteTable(tableName) {
+      connection.query(`DROP TABLE ${tableName}`, function(error, results, fields) {
+        if (error) throw error;
+        console.log(`Table ${tableName} deleted.`);
+      });
+    }
+  </script>
+</body>
+</html>
